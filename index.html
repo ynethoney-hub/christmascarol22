@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>중3 영어 독해 학습: The First Spirit</title>
+    <!-- Tailwind CSS 로드 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 구글 폰트 (Inter & Nanum Gothic) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', 'Noto Sans KR', sans-serif; }
+        .sentence-item {
+            transition: all 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .sentence-item.active {
+            border-left: 4px solid #3b82f6;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- 상단 헤더 -->
+    <header class="bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-md sticky top-0 z-20">
+        <div class="max-w-4xl mx-auto px-4 py-4 md:py-6 flex flex-col sm:flex-row justify-between items-center gap-3">
+            <div>
+                <span class="bg-blue-500 text-xs font-semibold px-2.5 py-1 rounded-full uppercase tracking-wider">중3 수준 맞춤 독해</span>
+                <h1 class="text-xl md:text-3xl font-bold mt-1">A Christmas Carol: The First Spirit</h1>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="setMode('study')" id="btnStudy" class="px-4 py-2 bg-white text-indigo-700 font-semibold rounded-lg shadow hover:bg-indigo-50 transition text-sm md:text-base">📖 본문 학습</button>
+                <button onclick="setMode('quiz')" id="btnQuiz" class="px-4 py-2 bg-indigo-700 text-white font-semibold rounded-lg shadow hover:bg-indigo-600 transition text-sm md:text-base">📝 실력 퀴즈</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 메인 콘텐츠 영역 -->
+    <main class="max-w-4xl mx-auto px-4 py-6 md:py-8 flex-grow w-full">
+        
+        <!-- 학습 모드 -->
+        <div id="studyMode" class="space-y-6">
+            
+            <!-- 본문 카드 컨테이너 -->
+            <div class="bg-white p-5 md:p-8 rounded-2xl shadow-sm border border-slate-200">
+                <div class="flex justify-between items-center mb-6 border-b pb-4">
+                    <h2 id="partTitle" class="text-base md:text-xl font-bold text-slate-800">Part 1</h2>
+                    <div class="flex items-center gap-2">
+                        <button onclick="changePage(-1)" id="prevPageBtn" class="px-3 py-1 bg-slate-100 hover:bg-slate-200 rounded text-sm font-medium disabled:opacity-50">이전</button>
+                        <span id="pageIndicator" class="text-sm font-semibold text-indigo-600">Part 1 / 3</span>
+                        <button onclick="changePage(1)" id="nextPageBtn" class="px-3 py-1 bg-slate-100 hover:bg-slate-200 rounded text-sm font-medium disabled:opacity-50">다음</button>
+                    </div>
+                </div>
+
+                <!-- 텍스트 리스트 (문장별 클릭 시 하단 인라인 박스 토글) -->
+                <div id="textContent" class="space-y-4">
+                    <!-- 자바스크립트로 동적 렌더링 -->
+                </div>
+
+                <!-- 하단 파트 페이지네이션 -->
+                <div class="flex justify-between items-center mt-8 pt-4 border-t">
+                    <button onclick="changePage(-1)" id="prevPageBtnBottom" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-sm font-medium disabled:opacity-50">이전 파트</button>
+                    <button onclick="changePage(1)" id="nextPageBtnBottom" class="px-4 py-2 bg-indigo-600 text-white hover:bg-indigo-700 rounded-lg text-sm font-medium disabled:opacity-50 shadow-sm">다음 파트</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 퀴즈 모드 -->
+        <div id="quizMode" class="hidden max-w-2xl mx-auto bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200">
+            <div class="flex justify-between items-center mb-6 border-b pb-4">
+                <h2 class="text-lg md:text-xl font-bold text-slate-800">중3 어휘 및 독해 실력 퀴즈</h2>
+                <span id="quizProgress" class="text-sm font-semibold text-indigo-600">문제 1 / 5</span>
+            </div>
+            <div id="quizContainer">
+                <!-- 퀴즈 내용 -->
+            </div>
+        </div>
+
+    </main>
+
+    <!-- 푸터 -->
+    <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs md:text-sm text-slate-500 mt-auto">
+        A Christmas Carol 학습 웹앱 &copy; 2026 중3 영어 자율 학습 프로젝트
+    </footer>
+
+    <!-- 자바스크립트 학습 데이터 및 로직 -->
+    <script>
+        // 파트별 본문 데이터 (중3 수준 해석, 주요 단어, 문법 포함)
+        const storyPages = [
+            {
+                title: "Part 1: 첫 번째 유령의 등장",
+                sentences: [
+                    {
+                        en: "Scrooge fell asleep after the ghost of Marley left.",
+                        ko: "말리의 유령이 떠난 후 스크루지는 잠이 들었습니다.",
+                        words: [
+                            { word: "fall asleep", meaning: "잠들다" },
+                            { word: "ghost", meaning: "유령" },
+                            { word: "leave", meaning: "떠나다" }
+                        ],
+                        grammar: "[접속사 after] '~한 후에'라는 의미로 절과 절을 연결합니다."
+                    },
+                    {
+                        en: "However, he woke up again around one in the morning.",
+                        ko: "하지만 그는 새벽 1시경에 다시 잠에서 깼습니다.",
+                        words: [
+                            { word: "however", meaning: "하지만, 그러나" },
+                            { word: "wake up", meaning: "잠이 깨다" },
+                            { word: "around", meaning: "~쯤, 약" }
+                        ],
+                        grammar: "[부사구] 'around one in the morning'은 시간의 전치사구로 시각을 나타냅니다."
+                    },
+                    {
+                        en: "Suddenly, his room was filled with light.",
+                        ko: "갑자기 그의 방이 빛으로 가득 찼습니다.",
+                        words: [
+                            { word: "suddenly", meaning: "갑자기" },
+                            { word: "be filled with", meaning: "~로 가득 차다" }
+                        ],
+                        grammar: "[수동태] 'be filled with'는 '~로 가득 채워지다(차다)'라는 뜻의 상태 수동태 표현입니다."
+                    },
+                    {
+                        en: "A spirit stood beside his bed!",
+                        ko: "유령 하나가 그의 침대 곁에 서 있었습니다!",
+                        words: [
+                            { word: "spirit", meaning: "정령, 유령" },
+                            { word: "beside", meaning: "~ 곁에, 옆에" }
+                        ],
+                        grammar: "[전치사 beside] 위치를 나타내며 'next to'와 비슷한 의미입니다."
+                    },
+                    {
+                        en: "The spirit looked very strange.",
+                        ko: "그 유령은 매우 낯설고 이상해 보였습니다.",
+                        words: [
+                            { word: "look + 형용사", meaning: "~해 보이다" },
+                            { word: "strange", meaning: "이상한, 낯선" }
+                        ],
+                        grammar: "[감각동사 look] 뒤에 형용사 보어(strange)가 와서 주어의 상태를 설명합니다."
+                    },
+                    {
+                        en: "He was as small as a child, but very, very old.",
+                        ko: "그는 아이처럼 작았지만, 매우 매우 나이가 들어 보였습니다.",
+                        words: [
+                            { word: "as ~ as ...", meaning: "~만큼 …한" },
+                            { word: "child", meaning: "아이" }
+                        ],
+                        grammar: "[원급 비교 구문] 'as small as a child'는 아이만큼 작다는 동등 비교를 나타냅니다."
+                    },
+                    {
+                        en: "He was dressed all in white and had long white hair.",
+                        ko: "그는 온통 흰색 옷을 입고 있었고 긴 백발을 가지고 있었습니다.",
+                        words: [
+                            { word: "be dressed in", meaning: "~을 입고 있다" },
+                            { word: "white", meaning: "하얀색" }
+                        ],
+                        grammar: "[수동태 관용구] 'be dressed in ~'은 '~를 입고 있는 상태이다'를 의미합니다."
+                    },
+                    {
+                        en: "The light in the room was coming from the top of the spirit's head.",
+                        ko: "방 안의 빛은 유령의 머리 꼭대기에서 나오고 있었습니다.",
+                        words: [
+                            { word: "top", meaning: "꼭대기, 정수리" },
+                            { word: "come from", meaning: "~에서 나오다[비롯되다]" }
+                        ],
+                        grammar: "[과거진행형] 'was coming'은 과거 특정 시점에 진행 중이던 동작을 나타냅니다."
+                    },
+                    {
+                        en: "Under his arm, he held a large cap.",
+                        ko: "그는 팔 아래에 큰 모자를 끼고 있었습니다.",
+                        words: [
+                            { word: "arm", meaning: "팔" },
+                            { word: "hold", meaning: "잡고 있다, 들고 있다" },
+                            { word: "cap", meaning: "(챙이 없는) 모자" }
+                        ],
+                        grammar: "[도치/장소 부사구 강조] 목적어인 'a large cap'이 뒤로 가고 장소 부사구가 앞으로 도치된 형태입니다."
+                    },
+                    {
+                        en: "“Who and what are you?” asked Scrooge.",
+                        ko: "“당신은 누구이고 무엇인가요?” 스크루지가 물었습니다.",
+                        words: [
+                            { word: "ask", meaning: "묻다, 질문하다" }
+                        ],
+                        grammar: "[직접 의문문] 주어와 동사의 어순이 바뀐 의문문 기본 구조입니다."
+                    },
+                    {
+                        en: "“I am the Ghost of Christmas Past,” said the spirit in a soft voice.",
+                        ko: "“나는 과거 크리스마스의 유령이다,” 유령이 부드러운 목소리로 말했습니다.",
+                        words: [
+                            { word: "past", meaning: "과거" },
+                            { word: "soft", meaning: "(소리가) 부드러운, 조용한" },
+                            { word: "voice", meaning: "목소리" }
+                        ],
+                        grammar: "[전치사 in] 'in a soft voice'는 '부드러운 목소리로'라는 수단을 나타냅니다."
+                    },
+                    {
+                        en: "“Long past?”",
+                        ko: "“먼 옛날의 과거요?”",
+                        words: [
+                            { word: "long", meaning: "오랜, 긴" }
+                        ],
+                        grammar: "[생략 구문] 앞 문장의 내용을 받아 단답형으로 되묻는 표현입니다."
+                    },
+                    {
+                        en: "“No. Your past.” Then the spirit said, “Walk with me.”",
+                        ko: "“아니요. 당신의 과거요.” 그러고 나서 유령이 말했습니다. “나와 함께 걸어갑시다.”",
+                        words: [
+                            { word: "then", meaning: "그리고 나서, 그 때" },
+                            { word: "walk", meaning: "걷다" }
+                        ],
+                        grammar: "[명령문] 동사원형(Walk)으로 시작하여 상대방에게 행동을 요구합니다."
+                    },
+                    {
+                        en: "Scrooge got out of bed.",
+                        ko: "스크루지는 침대에서 일어났습니다.",
+                        words: [
+                            { word: "get out of", meaning: "~에서 나오다[일어나다]" }
+                        ],
+                        grammar: "[이어동사] get out of는 장소를 벗어나거나 침대에서 일어날 때 쓰는 표현입니다."
+                    },
+                    {
+                        en: "He took the spirit's hand, and they walked through the wall!",
+                        ko: "그는 유령의 손을 잡았고, 그들은 벽을 통과해 걸어갔습니다!",
+                        words: [
+                            { word: "take", meaning: "(손을) 잡다" },
+                            { word: "through", meaning: "~을 통과하여" }
+                        ],
+                        grammar: "[전치사 through] 공간의 내부를 관통하여 지나가는 방향성을 나타냅니다."
+                    }
+                ]
+            },
+            {
+                title: "Part 2: 스크루지의 소년 시절과 과거의 추억",
+                sentences: [
+                    {
+                        en: "To his surprise, Scrooge found himself in the country.",
+                        ko: "놀랍게도, 스크루지는 자신이 시골에 있는 것을 발견했습니다.",
+                        words: [
+                            { word: "to one's surprise", meaning: "놀랍게도" },
+                            { word: "find oneself", meaning: "정신 차려 보니 ~에 있음을 알다" },
+                            { word: "country", meaning: "시골" }
+                        ],
+                        grammar: "[재귀대명사] 'find oneself + 장소'는 자신이 처한 상황을 불쑥 깨닫는 표현입니다."
+                    },
+                    {
+                        en: "They were near a school.",
+                        ko: "그들은 학교 근처에 있었습니다.",
+                        words: [
+                            { word: "near", meaning: "~ 근처에" },
+                            { word: "school", meaning: "학교" }
+                        ],
+                        grammar: "[전치사] 장소를 나타내는 전치사 near 뒤에 명사가 바로 옵니다."
+                    },
+                    {
+                        en: "It was Scrooge's school when he was a boy.",
+                        ko: "그곳은 스크루지가 소년이었을 때의 학교였습니다.",
+                        words: [
+                            { word: "boy", meaning: "소년" }
+                        ],
+                        grammar: "[시간의 부사절 when] '~했을 때'라는 의미로 과거의 시점을 나타냅니다."
+                    },
+                    {
+                        en: "He saw himself in the school as a teenage boy.",
+                        ko: "그는 학교 안에서 십대 소년인 자신을 보았습니다.",
+                        words: [
+                            { word: "see", meaning: "보다" },
+                            { word: "teenage", meaning: "십대의" }
+                        ],
+                        grammar: "[재귀용법] 주어(He)와 목적어(himself)가 같으므로 재귀대명사를 사용했습니다."
+                    },
+                    {
+                        en: "A young girl was with him.",
+                        ko: "어린 소녀가 그와 함께 있었습니다.",
+                        words: [
+                            { word: "young", meaning: "어린, 젊은" },
+                            { word: "girl", meaning: "소녀" }
+                        ],
+                        grammar: "[기본형] 주어 + be동사 + 전치사구의 단순한 2형식/1형식 문장입니다."
+                    },
+                    {
+                        en: "“I've come to take you home for Christmas,” said the girl.",
+                        ko: "“크리스마스를 맞아 당신을 집으로 데려가려고 왔어요,” 소녀가 말했습니다.",
+                        words: [
+                            { word: "have come", meaning: "왔다 (현재완료)" },
+                            { word: "take ~ home", meaning: "~를 집에 데려다주다" }
+                        ],
+                        grammar: "[투부정사 부사적 용법 (목적)] 'to take'는 '~하기 위해서'라는 방문의 목적을 나타냅니다."
+                    },
+                    {
+                        en: "She was Scrooge's sister, Fanny.",
+                        ko: "그녀는 스크루지의 여동생인 패니였습니다.",
+                        words: [
+                            { word: "sister", meaning: "자매, 여동생, 누나" }
+                        ],
+                        grammar: "[동격] 콤마(,)를 이용해 'sister'와 'Fanny'가 같은 인물임을 설명합니다."
+                    },
+                    {
+                        en: "Together, the younger Scrooge and the girl happily got into a carriage and rode away.",
+                        ko: "함께, 더 젊은 스크루지와 그 소녀는 마차에 올라타 즐겁게 타고 멀리 떠났습니다.",
+                        words: [
+                            { word: "together", meaning: "함께" },
+                            { word: "get into", meaning: "(차 등에) 타다" },
+                            { word: "carriage", meaning: "마차" },
+                            { word: "ride away", meaning: "타고 떠나다" }
+                        ],
+                        grammar: "[병렬 구조] got(~와)와 rode(그리고 ~했다)가 동사로 연결되어 있습니다."
+                    },
+                    {
+                        en: "“She was weak,” Scrooge told the spirit.",
+                        ko: "“그녀는 몸이 약했어요,” 스크루지가 유령에게 말했습니다.",
+                        words: [
+                            { word: "weak", meaning: "약한, 몸이 약한" },
+                            { word: "tell", meaning: "말하다" }
+                        ],
+                        grammar: "[간접 화법/평서문] 스크루지가 유령에게 과거의 기억을 회상하며 건네는 말입니다."
+                    },
+                    {
+                        en: "“But she had a big heart,” replied the spirit.",
+                        ko: "“하지만 그녀는 마음이 컸었지(마음이 따뜻했지),” 유령이 대답했습니다.",
+                        words: [
+                            { word: "have a big heart", meaning: "마음이 넓다[따뜻하다]" },
+                            { word: "reply", meaning: "대답하다" }
+                        ],
+                        grammar: "[등위접속사 but] 앞 내용과 대조되는 내용을 부드럽게 연결합니다."
+                    },
+                    {
+                        en: "“And she had a son before she died. Your nephew.”",
+                        ko: "“그리고 그녀는 죽기 전에 아들을 낳았단다. 네 조카지.”",
+                        words: [
+                            { word: "son", meaning: "아들" },
+                            { word: "before", meaning: "~하기 전에" },
+                            { word: "die", meaning: "죽다" },
+                            { word: "nephew", meaning: "조카" }
+                        ],
+                        grammar: "[시간 부사절 before] '~하기 전에'라는 순서를 나타내는 접속사 절입니다."
+                    },
+                    {
+                        en: "Next, the spirit showed Scrooge another Christmas.",
+                        ko: "다음으로, 유령은 스크루지에게 또 다른 크리스마스를 보여주었습니다.",
+                        words: [
+                            { word: "next", meaning: "다음으로" },
+                            { word: "show", meaning: "보여주다" },
+                            { word: "another", meaning: "또 다른" }
+                        ],
+                        grammar: "[수여동사 show] 주어(The spirit) + 동사(showed) + 간접목적어(Scrooge) + 직접목적어(another Christmas) 구조입니다."
+                    },
+                    {
+                        en: "They were at Scrooge's first job.",
+                        ko: "그들은 스크루지의 첫 번째 직장에 있었습니다.",
+                        words: [
+                            { word: "job", meaning: "직장, 일" }
+                        ],
+                        grammar: "[소유격] Scrooge's first job으로 스크루지의 첫 직장임을 나타냅니다."
+                    },
+                    {
+                        en: "There, Mr. Fezziwig gave a Christmas party.",
+                        ko: "그곳에서 페지위그 씨가 크리스마스 파티를 열어주었습니다.",
+                        words: [
+                            { word: "give a party", meaning: "파티를 열다" }
+                        ],
+                        grammar: "[과거시제] give의 과거형 gave를 사용하여 과거의 사건을 서술합니다."
+                    },
+                    {
+                        en: "Scrooge watched his younger self have a fine time there.",
+                        ko: "스크루지는 자신의 더 젊은 자아가 그곳에서 즐거운 시간을 보내는 것을 지켜보았습니다.",
+                        words: [
+                            { word: "watch", meaning: "지켜보다, 관찰하다" },
+                            { word: "have a fine time", meaning: "즐거운 시간을 보내다" }
+                        ],
+                        grammar: "[지각동사 watch] 목적어(his younger self) 뒤에 동사원형(have)이 와서 목적격 보어 역할을 합니다."
+                    },
+                    {
+                        en: "“Look at old Fezziwig,” Scrooge said.",
+                        ko: "“늙은 페지위그를 봐,” 스크루지가 말했습니다.",
+                        words: [
+                            { word: "look at", meaning: "~을 보다" }
+                        ],
+                        grammar: "[명령문] 상대를 주목하게 하는 'Look at ~' 표현입니다."
+                    },
+                    {
+                        en: "“He has the power to make us happy or unhappy.”",
+                        ko: "“그는 우리를 행복하게도 불행하게도 만들 수 있는 힘을 가지고 있어.”",
+                        words: [
+                            { word: "power", meaning: "힘, 능력" },
+                            { word: "unhappy", meaning: "불행한" }
+                        ],
+                        grammar: "[투부정사 형용사적 용법] 'to make us happy'가 앞의 명사 power를 꾸며줍니다."
+                    },
+                    {
+                        en: "“He can make our work light or heavy.”",
+                        ko: "“그는 우리의 일을 가볍게도 무겁게도 만들 수 있지.”",
+                        words: [
+                            { word: "light", meaning: "(일이) 가벼운, 수월한" },
+                            { word: "heavy", meaning: "무거운, 버거운" }
+                        ],
+                        grammar: "[사역동사 make] make + 목적어(our work) + 목적격 보어(light or heavy 형용사) 구조입니다."
+                    },
+                    {
+                        en: "Then Scrooge half whispered, “I wish I could say a word to my clerk now.”",
+                        ko: "그러자 스크루지가 반쯤 속삭였습니다. “지금 내 점원에게 한 마디라도 할 수 있으면 좋을텐데.”",
+                        words: [
+                            { word: "half", meaning: "반쯤, 절반" },
+                            { word: "whisper", meaning: "속삭이다" },
+                            { word: "clerk", meaning: "사원, 점원" }
+                        ],
+                        grammar: "[가정법 과거 (I wish 가정법)] 현재 사실의 아쉬움을 나타낼 때 I wish 뒤에 과거 조동사 could를 씁니다."
+                    }
+                ]
+            },
+            {
+                title: "Part 3: 후회와 과거로부터의 탈출",
+                sentences: [
+                    {
+                        en: "The spirit had two more Christmases to show old Scrooge.",
+                        ko: "유령에게는 늙은 스크루지에게 보여줄 두 번의 크리스마스가 더 남아 있었습니다.",
+                        words: [
+                            { word: "two more", meaning: "두 개 더의" }
+                        ],
+                        grammar: "[투부정사 형용사적 용법] 'to show'가 앞의 명사구(two more Christmases)를 수식합니다."
+                    },
+                    {
+                        en: "On one, his younger self said goodbye to a girl.",
+                        ko: "첫 번째 크리스마스에, 그의 젊은 시절의 자아는 한 소녀에게 작별 인사를 고했습니다.",
+                        words: [
+                            { word: "say goodbye to", meaning: "~에게 작별 인사를 하다" }
+                        ],
+                        grammar: "[전치사 on] 특정한 날이나 크리스마스 같은 시점을 나타낼 때 사용합니다."
+                    },
+                    {
+                        en: "He wanted to work and earn money more than he wanted to be with her.",
+                        ko: "그는 그녀와 함께 있는 것보다 일하고 돈을 더 많이 벌기를 원했습니다.",
+                        words: [
+                            { word: "earn money", meaning: "돈을 벌다" },
+                            { word: "more than", meaning: "~보다 더" }
+                        ],
+                        grammar: "[비교급 표현] 'more than'을 이용해 두 가지 소망의 우선순위를 비교하고 있습니다."
+                    },
+                    {
+                        en: "And then on a later Christmas, the spirit showed him the same girl, older and married.",
+                        ko: "그리고 나서 더 나중의 크리스마스에, 유령은 그에게 그 똑같은 소녀를 나이가 들고 결혼한 모습으로 보여주었습니다.",
+                        words: [
+                            { word: "later", meaning: "나중의" },
+                            { word: "married", meaning: "결혼한" }
+                        ],
+                        grammar: "[분사/형용사 보어구] 'older and married'는 소녀의 상태를 부가적으로 설명하는 목적격 보어 역할입니다."
+                    },
+                    {
+                        en: "She lived happily in a house filled with children.",
+                        ko: "그녀는 아이들로 가득 찬 집에서 행복하게 살고 있었습니다.",
+                        words: [
+                            { word: "happily", meaning: "행복하게" },
+                            { word: "house", meaning: "집" }
+                        ],
+                        grammar: "[과거분사구 수식] 'filled with children'이 앞의 명사 house를 뒤에서 수식합니다."
+                    },
+                    {
+                        en: "Her husband seemed a fine man, too.",
+                        ko: "그녀의 남편 역시 멋진 사람처럼 보였습니다.",
+                        words: [
+                            { word: "husband", meaning: "남편" },
+                            { word: "seem", meaning: "~처럼 보이다" },
+                            { word: "fine", meaning: "좋은, 멋진" }
+                        ],
+                        grammar: "[감각/상태동사 seem] seem 뒤에 명사구(a fine man)가 와서 주어의 상태를 나타냅니다."
+                    },
+                    {
+                        en: "“Take me back!” ordered Scrooge.",
+                        ko: "“나를 돌려보내 줘!” 스크루지가 명령했습니다.",
+                        words: [
+                            { word: "take back", meaning: "돌려보내다, 데려다주다" },
+                            { word: "order", meaning: "명령하다" }
+                        ],
+                        grammar: "[명령문] 감정에 북받쳐 유령에게 강하게 요구하는 직접 화법입니다."
+                    },
+                    {
+                        en: "“I have seen enough!”",
+                        ko: "“나는 충분히 보았어!”",
+                        words: [
+                            { word: "enough", meaning: "충분히" }
+                        ],
+                        grammar: "[현재완료 시제] 'have seen'은 과거부터 현재까지 충분히 보아온 경험/완료를 나타냅니다."
+                    },
+                    {
+                        en: "He grabbed the spirit's cap.",
+                        ko: "그는 유령의 모자를 낚아채듯 붙잡았습니다.",
+                        words: [
+                            { word: "grab", meaning: "움켜잡다, 낚아채다" }
+                        ],
+                        grammar: "[동사의 과거형] grabbed로 급박한 행동을 묘사합니다."
+                    },
+                    {
+                        en: "And he pulled it down over the spirit's head to put out its light.",
+                        ko: "그리고 그는 유령의 불빛을 끄기 위해 그것을 유령의 머리 위로 꾹 눌러 썼습니다.",
+                        words: [
+                            { word: "pull down", meaning: "끌어내리다" },
+                            { word: "put out", meaning: "(불빛 등을) 끄다" }
+                        ],
+                        grammar: "[투부정사 부사적 용법] 'to put out its light'는 모자를 내린 목적('불을 끄기 위해서')을 나타냅니다."
+                    },
+                    {
+                        en: "Suddenly, Scrooge was back in his room.",
+                        ko: "갑자기, 스크루지는 자신의 방으로 돌아와 있었습니다.",
+                        words: [
+                            { word: "back", meaning: "제자리로, 돌아와서" }
+                        ],
+                        grammar: "[장소 전치사구] 'back in his room'으로 현재의 현실 장소를 나타냅니다."
+                    },
+                    {
+                        en: "He fell into bed and was asleep in a moment.",
+                        ko: "그는 침대에 쓰러지듯 누웠고 순식간에 잠들었습니다.",
+                        words: [
+                            { word: "fall into bed", meaning: "지쳐서 침대에 쓰러지듯 눕다" },
+                            { word: "in a moment", meaning: "순식간에, 잠시 후에" }
+                        ],
+                        grammar: "[병렬 구조] fell과 was가 과거 동사로 연결되어 순차적인 동작/상태를 나타냅니다."
+                    }
+                ]
+            }
+        ];
+
+        // 퀴즈 데이터
+        const quizData = [
+            {
+                question: "1. 스크루지가 잠에서 깬 시간은 언제인가요?",
+                options: ["새벽 1시경", "자정 정각", "아침 해가 뜰 무렵", "한밤중 12시"],
+                answer: 0
+            },
+            {
+                question: "2. 첫 번째 유령(Ghost of Christmas Past)의 머리 모양이나 빛은 어떠했나요?",
+                options: ["방 안의 빛이 유령의 머리 꼭대기에서 나오고 있었다.", "얼굴에서 눈부신 태양 빛이 났다.", "머리 위에 촛불을 얹고 있었다.", "빛이 전혀 없이 어두컴컴했다."],
+                answer: 0
+            },
+            {
+                question: "3. 스크루지의 어린 시절 학교에서 만난 여동생의 이름은 무엇인가요?",
+                options: ["마리(Marley)", "패니(Fanny)", "벨(Belle)", "에이미(Amy)"],
+                answer: 1
+            },
+            {
+                question: "4. 스크루지가 첫 직장에서 견학한 파티를 열어준 고용주의 이름은?",
+                options: ["밥 크랫닛(Bob Cratchit)", "페지위그 씨(Mr. Fezziwig)", "제이콥 말리(Jacob Marley)", "스크루지 시니어"],
+                answer: 1
+            },
+            {
+                question: "5. 스크루지가 마지막 과거의 장면을 보고 보인 행동은 무엇인가요?",
+                options: ["유령과 함께 춤을 추었다.", "유령의 모자를 머리 위로 눌러 유령의 불빛을 끄려고 했다.", "울면서 집 밖으로 도망쳤다.", "유령에게 화를 내며 쫓아내었다."],
+                answer: 1
+            }
+        ];
+
+        let currentPage = 0;
+        let activeSentenceIndex = null; // 각 문장별 펼쳐짐 상태 관리 (인덱스 저장, 없으면 null)
+        let currentMode = 'study';
+        let currentQuizIndex = 0;
+        let score = 0;
+
+        // 모드 전환 함수
+        function setMode(mode) {
+            currentMode = mode;
+            const studyDiv = document.getElementById('studyMode');
+            const quizDiv = document.getElementById('quizMode');
+            const btnStudy = document.getElementById('btnStudy');
+            const btnQuiz = document.getElementById('btnQuiz');
+
+            if (mode === 'study') {
+                studyDiv.classList.remove('hidden');
+                quizDiv.classList.add('hidden');
+                btnStudy.className = "px-4 py-2 bg-white text-indigo-700 font-semibold rounded-lg shadow hover:bg-indigo-50 transition text-sm md:text-base";
+                btnQuiz.className = "px-4 py-2 bg-indigo-700 text-white font-semibold rounded-lg shadow hover:bg-indigo-600 transition text-sm md:text-base";
+                renderStudyPage();
+            } else {
+                studyDiv.classList.add('hidden');
+                quizDiv.classList.remove('hidden');
+                btnStudy.className = "px-4 py-2 bg-indigo-700 text-white font-semibold rounded-lg shadow hover:bg-indigo-600 transition text-sm md:text-base";
+                btnQuiz.className = "px-4 py-2 bg-white text-indigo-700 font-semibold rounded-lg shadow hover:bg-indigo-50 transition text-sm md:text-base";
+                currentQuizIndex = 0;
+                score = 0;
+                renderQuiz();
+            }
+        }
+
+        // 페이지 변경
+        function changePage(direction) {
+            const newPage = currentPage + direction;
+            if (newPage >= 0 && newPage < storyPages.length) {
+                currentPage = newPage;
+                activeSentenceIndex = null; // 페이지 이동 시 초기화
+                renderStudyPage();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        // 학습 페이지 렌더링 (각 문장 아래에 설명 카드 인라인 삽입)
+        function renderStudyPage() {
+            const pageData = storyPages[currentPage];
+            document.getElementById('partTitle').innerText = pageData.title;
+            document.getElementById('pageIndicator').innerText = `Part ${currentPage + 1} / ${storyPages.length}`;
+            
+            const container = document.getElementById('textContent');
+            container.innerHTML = '';
+
+            pageData.sentences.forEach((item, index) => {
+                const isOpen = activeSentenceIndex === index;
+                
+                // 문장 래퍼 박스
+                const wrapper = document.createElement('div');
+                wrapper.className = `sentence-item rounded-xl border transition-all ${isOpen ? 'bg-blue-50/60 border-blue-300 shadow-sm' : 'bg-white border-slate-200 hover:border-indigo-200 hover:bg-slate-50/50'}`;
+                
+                // 본문 문장 헤더 부분
+                let html = `
+                    <div class="p-4 cursor-pointer flex items-start justify-between gap-3" onclick="toggleSentence(${index})">
+                        <div class="flex items-start gap-3 flex-grow">
+                            <span class="text-xs font-bold text-indigo-600 bg-indigo-100 px-2 py-0.5 rounded mt-1 shrink-0">${index + 1}</span>
+                            <p class="font-medium text-slate-800 text-base md:text-lg leading-relaxed">${item.en}</p>
+                        </div>
+                        <div class="flex items-center gap-2 shrink-0">
+                            <button onclick="event.stopPropagation(); speakText('${item.en.replace(/'/g, "\\'")}')" class="text-slate-400 hover:text-indigo-600 p-2 rounded-full hover:bg-slate-200 transition" title="음성 듣기">
+                                🔊
+                            </button>
+                            <span class="text-slate-400 text-sm font-semibold transition-transform duration-200 ${isOpen ? 'rotate-180 text-indigo-600' : ''}">▼</span>
+                        </div>
+                    </div>
+                `;
+
+                // 클릭되어 열려있을 때 바로 아래에 나타나는 설명 박스
+                if (isOpen) {
+                    let wordsHtml = item.words.map(w => `
+                        <div class="bg-white border border-indigo-100 p-2.5 rounded-lg shadow-2xs">
+                            <span class="font-bold text-indigo-900 block text-xs md:text-sm">${w.word}</span>
+                            <span class="text-slate-600 block text-xs mt-0.5">${w.meaning}</span>
+                        </div>
+                    `).join('');
+
+                    html += `
+                        <div class="px-4 pb-4 pt-1 border-t border-blue-100 space-y-4 animate-fadeIn">
+                            <!-- 해석 박스 -->
+                            <div class="bg-indigo-50/80 p-3.5 rounded-xl border border-indigo-100 flex items-start justify-between gap-2">
+                                <div>
+                                    <span class="text-xs font-bold text-indigo-500 uppercase tracking-wider block mb-1">우리말 해석</span>
+                                    <p class="text-sm md:text-base font-semibold text-indigo-950">${item.ko}</p>
+                                </div>
+                                <button onclick="speakText('${item.en.replace(/'/g, "\\'")}')" class="text-xs bg-indigo-600 text-white px-2.5 py-1.5 rounded-md hover:bg-indigo-700 transition shrink-0 shadow-xs">
+                                    🔊 발음
+                                </button>
+                            </div>
+
+                            <!-- 주요 단어 -->
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">주요 단어 및 표현</h4>
+                                <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                    ${wordsHtml}
+                                </div>
+                            </div>
+
+                            <!-- 핵심 문법 -->
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">중3 핵심 문법 포인트</h4>
+                                <div class="bg-amber-50 border border-amber-200 p-3 rounded-xl text-xs text-amber-900 leading-relaxed font-medium">
+                                    💡 ${item.grammar}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                wrapper.innerHTML = html;
+                container.appendChild(wrapper);
+            });
+
+            const isFirst = currentPage === 0;
+            const isLast = currentPage === storyPages.length - 1;
+            
+            document.getElementById('prevPageBtn').disabled = isFirst;
+            document.getElementById('nextPageBtn').disabled = isLast;
+            document.getElementById('prevPageBtnBottom').disabled = isFirst;
+            document.getElementById('nextPageBtnBottom').disabled = isLast;
+        }
+
+        // 문장 클릭 시 토글 동작
+        function toggleSentence(index) {
+            if (activeSentenceIndex === index) {
+                activeSentenceIndex = null; // 이미 열려있으면 닫기
+            } else {
+                activeSentenceIndex = index; // 클릭한 문장 열기
+            }
+            renderStudyPage();
+        }
+
+        // Web Speech API를 활용한 음성 재생
+        function speakText(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel(); // 이전 재생 취소
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.9; // 조금 천천히 (중3 학습용)
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        // 퀴즈 렌더링
+        function renderQuiz() {
+            const container = document.getElementById('quizContainer');
+            if (currentQuizIndex >= quizData.length) {
+                container.innerHTML = `
+                    <div class="text-center py-8 space-y-4">
+                        <div class="inline-flex p-4 bg-green-100 text-green-600 rounded-full text-3xl mb-2">🎉</div>
+                        <h3 class="text-xl md:text-2xl font-bold text-slate-800">퀴즈를 모두 완료했습니다!</h3>
+                        <p class="text-slate-600 text-base md:text-lg">총 5문항 중 <span class="font-bold text-indigo-600">${score}문항</span>을 맞추셨습니다.</p>
+                        <button onclick="setMode('study')" class="mt-4 px-6 py-2.5 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition shadow">
+                            본문 다시 학습하기
+                        </button>
+                    </div>
+                `;
+                document.getElementById('quizProgress').innerText = "완료";
+                return;
+            }
+
+            const q = quizData[currentQuizIndex];
+            document.getElementById('quizProgress').innerText = `문제 ${currentQuizIndex + 1} / ${quizData.length}`;
+
+            let optionsHtml = '';
+            q.options.forEach((opt, idx) => {
+                optionsHtml += `
+                    <button onclick="checkAnswer(${idx})" class="w-full text-left p-3.5 md:p-4 rounded-xl border border-slate-200 hover:border-indigo-500 hover:bg-indigo-50/50 transition font-medium text-slate-700 shadow-sm flex items-center justify-between group">
+                        <span class="text-sm md:text-base">${opt}</span>
+                        <span class="w-6 h-6 rounded-full border border-slate-300 flex items-center justify-center text-xs text-slate-400 group-hover:border-indigo-500 group-hover:text-indigo-600 shrink-0">${idx + 1}</span>
+                    </button>
+                `;
+            });
+
+            container.innerHTML = `
+                <div class="space-y-6">
+                    <h3 class="text-base md:text-lg font-bold text-slate-800 leading-snug">${q.question}</h3>
+                    <div class="space-y-3">
+                        ${optionsHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+        // 정답 체크
+        function checkAnswer(selectedIdx) {
+            const q = quizData[currentQuizIndex];
+            const container = document.getElementById('quizContainer');
+
+            if (selectedIdx === q.answer) {
+                score++;
+                container.innerHTML = `
+                    <div class="text-center py-8 space-y-4">
+                        <div class="text-2xl md:text-4xl text-green-500 font-bold">정답입니다! 👏</div>
+                        <p class="text-slate-600">훌륭합니다. 다음 문제로 이동합니다.</p>
+                        <button onclick="nextQuiz()" class="px-6 py-2.5 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition shadow">
+                            다음 문제
+                        </button>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `
+                    <div class="text-center py-8 space-y-4">
+                        <div class="text-2xl md:text-4xl text-rose-500 font-bold">아쉽네요! 😅</div>
+                        <p class="text-slate-600">정답은 <b>"${q.options[q.answer]}"</b> 입니다.</p>
+                        <button onclick="nextQuiz()" class="px-6 py-2.5 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition shadow">
+                            다음 문제
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        function nextQuiz() {
+            currentQuizIndex++;
+            renderQuiz();
+        }
+
+        // 초기 실행
+        window.onload = function() {
+            renderStudyPage();
+        };
+    </script>
+</body>
+</html>
